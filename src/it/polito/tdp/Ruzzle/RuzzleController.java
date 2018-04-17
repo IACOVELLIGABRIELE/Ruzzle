@@ -6,6 +6,7 @@ package it.polito.tdp.Ruzzle;
 
 import java.net.URL;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
 
@@ -15,6 +16,7 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 
 public class RuzzleController {
@@ -89,9 +91,43 @@ public class RuzzleController {
 
     @FXML // fx:id="txtStatus"
     private Label txtStatus; // Value injected by FXMLLoader
+    
+    @FXML
+    private TextArea txtResult;
+    
+    @FXML
+    private Button btnRisolvi;
 
     @FXML
     void handleProva(ActionEvent event) {
+    	
+    	String parola = txtParola.getText();
+    	
+    	if(parola.length() == 0) {
+    		txtStatus.setText("ERRORE : parola vuota\n");
+    		return;
+    	}
+    	
+    	parola = parola.toUpperCase();
+    	
+    	if(!parola.matches("[A-Z]+")) {   //se vado sopra ad un metodo e vado su regularexpression mi apre oracle
+    		txtStatus.setText("ERRORE : caratteri non ammessi\n");
+    		return;
+    	}
+    	
+    	List<Pos> percorso = model.trovaParola(parola);
+    	
+    	//System.out.println(percorso);
+    	if(percorso != null) {
+    	for(Button b : letters.values()) {
+    		b.setDefaultButton(false);
+    	}
+    	for(Pos p : percorso) {
+    		letters.get(p).setDefaultButton(true);
+    	}
+    	}else {
+    		txtStatus.setText("ERRORE : parola non trovata\n");
+    	}
 
     }
     
@@ -99,6 +135,19 @@ public class RuzzleController {
     void handleReset(ActionEvent event) {
     	model.reset();
 
+    }
+    
+    @FXML
+    void handleRisolvi(ActionEvent event) {
+    	
+    	List<String> tutte = model.trovaTutte();
+    	
+    	txtResult.clear();
+    	txtResult.appendText(String.format("Trovate %d soluzioni\n",tutte.size()));
+    	for(String s : tutte) {
+    	txtResult.appendText(s+"\n");}
+    	
+    	
     }
 
 
@@ -155,7 +204,7 @@ public class RuzzleController {
     		this.letters.get(cell).textProperty().bind(m.getBoard().getCellValueProperty(cell));
     	}
     	
-    	this.txtStatus.textProperty().bind(m.statusTextProperty());
+    	//this.txtStatus.textProperty().bind(m.statusTextProperty());
     	
     }
 }
